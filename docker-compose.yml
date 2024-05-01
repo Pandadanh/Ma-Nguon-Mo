@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  django:
+    build: ./
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: python manage.py runserver 0.0.0.0:8000
+
+  fastapi:
+    build: ./api
+    ports:
+      - "8070:8070"  
+    volumes:
+      - ./api:/app
+    command: python -m uvicorn lyric:app --reload --port 8070

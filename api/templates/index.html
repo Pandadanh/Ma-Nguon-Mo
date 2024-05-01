@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyric Finder</title>
+
+    <style>
+        #lyricsContainer {
+            position: relative;
+            margin: 20px;
+        }
+        #copyButton {
+            position: absolute; 
+            top: 0; 
+            right: 0; 
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #lyricsText {
+            text-align: left;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: scroll;
+        }
+        body, html {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .input-field, .btn {
+            width: 80%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .btn {
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn:hover {
+            background-color: #4cae4c;
+        }
+        
+    </style>
+
+    
+
+</head>
+<body>
+    
+<div class="container">
+    <h1>Lyric Finder</h1>
+    <input type="text" id="songName" placeholder="Enter song name" class="input-field">
+    <button class="btn" onclick="fetchLyrics()">Get Lyrics</button>
+    <div id="lyrics" >
+        <pre id="lyricsText"></pre>
+    </div>
+    <button class="btn" onclick="copyLyrics()">Copy</button>
+</div>
+
+
+    <script>
+        async function fetchLyrics() {
+            const songName = document.getElementById('songName').value;
+            if (!songName) {
+                alert('Please enter a song name');
+                return;
+            }
+    
+            const response = await fetch(`http://127.0.0.1:8070/lyrics/?song_name=${encodeURIComponent(songName)}`);
+            const data = await response.json();
+    
+            const lyricsDiv = document.getElementById('lyricsText');
+            lyricsDiv.innerHTML = ''; 
+    
+            if (data.error) {
+                lyricsDiv.innerHTML = `<p>${data.error}</p>`;
+            } else {
+               
+                const prettyJson = JSON.stringify(data, null, 4);
+                lyricsDiv.textContent = prettyJson;
+            }
+        }
+    
+        function copyLyrics() {
+            const lyricsText = document.getElementById('lyricsText').innerText;
+            navigator.clipboard.writeText(lyricsText).then(() => {
+                alert('Copy Success');
+            }).catch(err => {
+                console.error('Error copying text: ', err);
+            });
+        }
+    </script>
+    
+    
+</body>
+</html>

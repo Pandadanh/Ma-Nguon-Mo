@@ -1,0 +1,636 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+   music player
+  </title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mediaelement/4.2.7/mediaelementplayer.min.css" rel="stylesheet"/>
+  <link href="{% static './style.css' %}" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
+
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(to right,#9a1d86, #1595be);
+    font-weight: bold;
+    height: 100%; /* This ensures that at least the body takes up all the vertical space */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevents horizontal scroll */
+    }
+    
+    .player{
+      padding: 20px;
+      min-height: 90vh; 
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      flex-grow: 1; /* This makes the player element grow to fill available space */
+      justify-content: flex-start; /* Adjusts distribution of child elements */
+  }
+    .wrapper{
+      width: 50%;
+      min-height: 85vh;  /* Provides a minimum height but allows expansion based on content */
+      position: relative;
+      border: 1px solid transparent;
+      padding: 30px;
+      border-radius: 20px;
+      background-color: #ddd;
+      box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+      overflow: hidden;  /* Đảm bảo các thành phần không vượt ra ngoài wrapper */
+    }
+    .lyrics-container{
+      width: 50%;
+    }
+    
+    .details {
+    display: flex ;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    }
+    
+
+    .right-section{
+      background: linear-gradient(to right,#9a1d86, #1595be);
+    }
+
+    .song-lyrics {
+      color: #F8F8FF !important;
+    }
+
+    .track-art {
+    margin: 25px;
+    height: 25.2vh;
+    width: 25.2vh;
+    border:2px solid 	#FFFAFA;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    -moz-box-shadow: 0px 6px 5px black;
+    -webkit-box-shadow: 0px 6px 5px black;
+    box-shadow: 0px 6px 5px black;
+    -moz-border-radius:190px;
+    -webkit-border-radius:190px;
+    border-radius:190px;
+    }
+    
+    .track-art img {
+      width: 100%;
+      height: 100%; 
+      border-radius: 50%; 
+      object-fit: cover; 
+    }
+    
+
+    .now-playing {
+    font-size: 1rem;
+    }
+    
+    .track-name {
+    font-size: 2.5rem;
+    }
+    
+    .track-artist {
+    margin-top: 5px;
+    font-size: 1.5rem;
+    }
+    
+    .buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+      z-index: 2; /* Ensure buttons are above the music list */
+    }
+    .active{
+        color: black;
+    }
+    
+    .repeat-track,
+    .random-track,
+    .playpause-track,
+    .prev-track,
+    .next-track,
+    .show-hide-music-list {
+    padding: 25px;
+    opacity: 0.8;
+    transition: opacity .2s;
+    }
+    .music-list {
+      position: absolute;
+      top: 100%; /* Initially positioned below the bottom of the buttons */
+      left: 0;
+      width: 100%;
+      transform: translateY(100%); /* Initially hidden below the viewport */
+      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      background-color: white;
+      visibility: hidden;
+      opacity: 0;
+      z-index: 2; /* Higher z-index to ensure it displays over the buttons */
+  }
+  
+  .music-list.visible {
+      transform: translateY(-100%); /* Slide up over the buttons */
+      visibility: visible;
+      opacity: 1;
+      transition-delay: 0s;
+  }
+  
+  .music-list ul {
+    list-style-type: none;
+    padding: 20px;
+    margin: 0;
+    max-height: 40.3vh; /* Set a fixed maximum height */
+    overflow-y: auto; /* Enable vertical scrolling */
+  }
+  
+  .music-list li {
+      padding: 20px;
+      border-bottom: 1px solid #ccc;
+  }
+  .music-list li:last-child {
+      border-bottom: none;
+  }
+  .list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f2f2f2; /* Light grey background for the header */
+    border-bottom: 1px solid #ccc; /* A subtle border under the header */
+}
+
+.list-header .fa-music {
+    margin-right: 5px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333; /* Dark grey color for the icon */
+}
+  
+    
+    .repeat-track:hover,
+    .random-track:hover,
+    .playpause-track:hover,
+    .prev-track:hover,
+    .next-track:hover {
+    opacity: 1.0;
+    }
+    
+    .slider_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    }
+    
+    .seek_slider, .volume_slider {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    height: 5px;
+    background: rgb(19, 125, 207);
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    }
+    
+    .seek_slider::-webkit-slider-thumb,
+    .volume_slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: white;
+    border: 3px solid rgb(19, 125, 207);
+    cursor: grab;
+    border-radius: 100%;
+    }
+    
+    .seek_slider:hover,
+    .volume_slider:hover {
+    opacity: 1.0;
+    }
+    
+    .seek_slider {
+    width: 60%;
+    }
+    
+    .volume_slider {
+    width: 30%;
+    }
+    
+    .current-time,
+    .total-duration {
+    padding: 10px;
+    }
+    
+    i.fa-volume-down,
+    i.fa-volume-up {
+    padding: 10px;
+    }
+    
+    i,
+    i.fa-play-circle,
+    i.fa-pause-circle,
+    i.fa-step-forward,
+    i.fa-step-backward,
+    p {
+    cursor: pointer;
+    }
+    .randomActive{
+        color: black;
+    }
+    .rotate {
+        animation: rotation 8s infinite linear;
+    }
+    @keyframes rotation {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(359deg);
+        }
+    }
+    .active {
+      color: #CD5C5C; 
+    
+  }
+
+    .loader {
+      height: 7vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .loader .stroke{
+        background: #f1f1f1;
+        height: 150%;
+        width: 10px;
+        border-radius: 50px;
+        margin: 0 5px;
+        animation: animate 1.4s linear infinite;
+    }
+      @keyframes animate {
+        50% {
+          height: 20%;
+          background: rgb(19, 125, 207);
+        }
+    
+        100% {
+          background: rgb(19, 125, 207);
+          height: 100%;
+        }
+      }
+      .stroke:nth-child(1){
+          animation-delay: 0s;
+      }
+      .stroke:nth-child(2){
+        animation-delay: 0.3s;
+    }
+    .stroke:nth-child(3){
+        animation-delay: 0.6s;
+    }
+    .stroke:nth-child(4){
+        animation-delay: 0.9s;
+    }
+    .stroke:nth-child(5){
+        animation-delay: 0.6s;
+    }
+    .stroke:nth-child(6){
+        animation-delay: 0.3s;
+    }
+    .stroke:nth-child(7){
+        animation-delay: 0s;
+    }
+    .content {
+      justify-content: space-between;
+  }
+  .player {
+      flex: 1;
+      /* Thêm padding hoặc margin nếu cần */
+  }
+.song-item {
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9; /* Màu nền nhẹ cho mỗi item */
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 5px; /* Bo góc */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Thêm bóng đổ nhẹ */
+  transition: transform 0.2s, box-shadow 0.2s; /* Hiệu ứng chuyển đổi */
+  margin-top: 10px; /* Thêm khoảng trống ở phía trên mỗi mục */
+  margin-bottom: 10px; /* Thêm khoảng trống ở phía dưới mỗi mục */
+}
+
+.song-item:hover {
+  transform: translateY(-5px); /* Di chuyển item lên khi hover */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* Bóng đổ đậm hơn khi  hover */
+}
+.song-item a {
+  text-decoration: none; /* Loại bỏ gạch chân */
+  color: inherit; /* Kế thừa màu chữ từ phần tử cha */
+  display: inline-block; /* Đảm bảo thẻ <a> hoạt động như một khối */
+}
+
+.song-info {
+  display: flex;
+  flex-direction: column;
+  margin-right: auto;
+}
+.download-button {
+  text-decoration: none; /* Loại bỏ gạch chân */
+  color: white; /* Đặt màu chữ */
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.3s, color 0.3s; /* Thêm hiệu ứng chuyển đổi mềm mại */
+}
+
+.download-button:hover, .download-button:active {
+  background-color: #0056b3; /* Màu nền khi hover hoặc active */
+  color: #fff; /* Màu chữ khi hover hoặc active */
+  text-decoration: none; /* Đảm bảo không có gạch chân khi hover */
+}
+
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .wrapper {
+        max-width: 960px;
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (max-width: 991px) {
+    .wrapper {
+        width: 100%;
+    }
+    .lyrics-container{
+      display:none;
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (max-width: 767px) {
+    .player {
+        min-height: auto;
+        padding: 20px;
+    }
+
+    .wrapper {
+        width: 90%;
+        padding: 15px;
+    }
+}
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575px) {
+    .player {
+        padding: 10px;
+    }
+    .wrapper {
+        width: 90%;
+        padding: 10px;
+        border-radius: 10px; /* Slightly reduced border radius */
+    }
+}
+
+
+
+
+  
+</style>
+
+ </head>
+ <body>
+
+ 
+  {% include 'main.html' %}
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mediaelement/4.2.7/mediaelement-and-player.min.js">
+  </script>
+  <script src="{% static './script.js' %}">
+  </script>
+
+  <script>
+
+
+
+
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const audio = document.getElementById('fc-media');  // Replace with the actual ID of your audio element
+        const lyricsContainer = document.getElementById('song-lyrics');
+        let currentLyricIndex = 0;
+
+        // Retrieve the lyrics data as a JSON string
+        const lyricsData = JSON.parse(document.getElementById('song-lyrics').getAttribute('data-lyrics'));
+
+        audio.addEventListener('timeupdate', function () {
+          const currentTime = audio.currentTime;
+
+          // Find the current lyrics based on the time
+          while (currentLyricIndex < lyricsData.length - 1 && currentTime >= timeToSeconds(lyricsData[currentLyricIndex + 1].time)) {
+            currentLyricIndex++;
+          }
+
+          // Update the displayed lyrics
+          lyricsContainer.innerText = lyricsData[currentLyricIndex].lyrics;
+        });
+
+        function timeToSeconds(time) {
+          const [minutes, seconds] = time.split(':').map(parseFloat);
+          return minutes * 60 + seconds;
+        }
+      });
+
+
+
+
+      ///////// tour bai //////////
+
+        
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const audio = document.getElementById('fc-media');
+        const seekSlider = document.getElementById('seek_slider');
+        const currentTimeDisplay = document.querySelector('.current-time');
+        const totalDurationDisplay = document.querySelector('.total-duration');
+        const playpauseButton = document.getElementById('playpause_button');
+        const volumeSlider = document.getElementById('volume_slider');
+
+        const prevPage = document.getElementById('prev_page');
+        const nextPage = document.getElementById('next_page');
+       
+        const repeatButton = document.getElementById('repeat-track'); 
+        let isRepeating = false;
+
+
+////////////////
+
+function setVolume() {
+  audio.volume = volumeSlider.value / 100;
+}
+
+volumeSlider.addEventListener('input', setVolume);
+
+
+audio.volume = 0.80; 
+////////////////////////
+
+setTimeout(function() {
+
+  if (audio.paused || audio.ended) {
+    audio.play();
+    playpauseButton.classList.remove('fa-play-circle');
+    playpauseButton.classList.add('fa-pause-circle');
+  }
+  audio.play();
+  console.log("Dsadsa")
+ 
+}, 2000);
+
+      /////////////////////
+        
+      repeatButton.addEventListener('click', function() {
+        isRepeating = !isRepeating; // Đảo ngược trạng thái lặp lại
+        repeatButton.classList.toggle('active', isRepeating); // Thêm hoặc bỏ class 'active' tùy vào trạng thái của isRepeating
+        console.log(isRepeating); // In trạng thái lặp lại ra console để debug
+    });
+
+            
+            ////////////////////////
+
+
+         
+              // Bắt sự kiện khi trang được tải lại hoặc chuyển đến
+              
+            
+              audio.addEventListener('ended', function() {
+                if (!isRepeating) { // Nếu không đang trong chế độ lặp
+                    {% if page_obj.has_next %}
+                        window.location.href = '?page={{ page_obj.next_page_number }}'; // Chuyển đến trang tiếp theo
+                    {% else %}
+                        window.location.href = '?page=1'; // Quay lại trang đầu tiên nếu không có trang tiếp theo
+                    {% endif %}
+                } else {
+                    // Nếu đang trong chế độ lặp, bạn có thể tải lại trang hiện tại
+                    window.location.reload();
+                }
+            });
+
+
+
+            ////////////////////
+
+
+        prevPage.addEventListener('click', function() {
+          {% if page_obj.has_previous %}
+              window.location.href = '?page={{ page_obj.previous_page_number }}';
+          {% endif %}
+      });
+  
+      nextPage.addEventListener('click', function() {
+        {% if page_obj.has_next %}
+            window.location.href = '?page={{ page_obj.next_page_number }}';
+        {% else %}
+           
+            window.location.href = '?page=1';
+        {% endif %}
+    });
+
+
+
+/////////////////////
+
+        
+       
+        audio.addEventListener('loadedmetadata', function() {
+            updateTotalDuration();
+        });
+    
+       
+        audio.addEventListener('timeupdate', function() {
+            updateSeekSlider();
+            updateCurrentTime();
+        });
+      
+        seekSlider.addEventListener('input', function() {
+            const time = audio.duration * (seekSlider.value / 100);
+            audio.currentTime = time;
+        });
+    
+        function updateSeekSlider() {
+            const value = (audio.currentTime / audio.duration) * 100;
+            seekSlider.value = value;
+        }
+    
+        function updateCurrentTime() {
+            currentTimeDisplay.textContent = formatTime(audio.currentTime);
+        }
+    
+        function updateTotalDuration() {
+            totalDurationDisplay.textContent = formatTime(audio.duration);
+        }
+    
+        function formatTime(time) {
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        ////////////////////////
+
+
+
+        playpauseButton.addEventListener('click', function() {
+
+       
+          if (audio.paused || audio.ended) {
+            audio.play();
+            playpauseButton.classList.remove('fa-play-circle');
+            playpauseButton.classList.add('fa-pause-circle');
+        } else {
+            audio.pause();
+            playpauseButton.classList.remove('fa-pause-circle');
+            playpauseButton.classList.add('fa-play-circle');
+        }
+        });
+           // Cập nhật nguồn audio dựa trên dữ liệu từ Django
+          const audioSource = document.getElementById('audio-source');
+          {% if item.audio_file %}
+          audioSource.src = "{{item.audio_file.url}}";
+          {% else %}
+          audioSource.src = "{{item.audio_link}}";
+          {% endif %}
+          audio.load(); // Gọi sau khi thay đổi nguồn để đảm bảo audio được tải với nguồn mới
+
+      
+
+          ////////////////////////
+
+     
+
+          
+
+    });
+    
+  </script>
+  
+ </body>
+</html>

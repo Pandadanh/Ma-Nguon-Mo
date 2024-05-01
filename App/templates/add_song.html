@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Song</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(to right,#9a1d86, #1595be);
+            font-weight: bold;
+            }
+            .container{
+                height: 95vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            .addnew{
+                width: 20%;
+                border: 1px solid transparent;
+                padding: 30px;
+                border-radius: 20px;
+                background-color: #ddd;
+                box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            .button {
+                padding: 10px 20px; /* Thêm padding để tăng kích thước */
+                background-color: #007bff; /* Màu nền */
+                color: white; /* Màu chữ */
+                border: none; /* Loại bỏ viền */
+                border-radius: 5px; /* Bo tròn góc */
+                cursor: pointer; /* Thay đổi con trỏ khi di chuột qua */
+                font-size: 16px; /* Kích thước chữ */
+                font-weight: bold; /* Độ đậm của chữ */
+                text-transform: uppercase; /* In hoa chữ */
+                transition: background-color 0.3s, transform 0.2s; 
+                outline: none;
+            }
+            
+            .button:hover {
+                background-color: #0056b3; /* Thay đổi màu nền khi hover */
+                transform: scale(1.05); /* Phóng to một chút khi hover */
+            }
+            
+            .button:active {
+                background-color: #004094; /* Màu nền khi nhấn */
+                transform: scale(0.95); /* Thu nhỏ một chút khi nhấn */
+            }
+            .button-container {
+                display: flex;
+                justify-content: center; /* Căn giữa theo chiều ngang */
+                align-items: center; /* Căn giữa theo chiều dọc nếu container có chiều cao cụ thể */
+            }
+            ul.messages {
+                list-style-type: none; /* Loại bỏ dấu đầu dòng */
+                padding: 0; /* Bạn cũng có thể muốn loại bỏ padding mặc định */
+            }
+            .messages li.success {
+                color: green;
+            }
+            
+            .messages li.error {
+                color: red;
+            }            
+            
+    </style>
+</head>
+<body>
+    <div class = "container">
+        <div class ="addnew"> 
+
+            <h2>Add New Song</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="button-container">
+                    <button type="submit" class="button">Add Song</button>
+                </div>
+            </form>
+            {% if messages %}
+        <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+        </div>
+    </div>
+    
+</body>
+</html>

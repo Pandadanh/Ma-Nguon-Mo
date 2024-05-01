@@ -1,0 +1,142 @@
+<html>
+   <head>
+    <meta charset="utf-8"/>
+    
+    <title>
+      music player
+    </title>
+    
+   </head>
+   <body>
+    
+
+    {% for item in page_obj %}
+    <div class="content"> 
+      <div class="player">
+        <div class="wrapper">
+            <div class="details">
+                <div class="now-playing">PLAYING ... </div>
+                <div class="track-art"><img alt="" src="{{item.image.url}}"/></div>
+                <div class="track-name"> {{item.title}}</div>
+                <div class="track-artist"> {{item.artist}}</div>
+            </div>
+  
+         
+          
+          <div class="slider_container">
+              <div class="current-time">00:00</div>
+              <input type="range" min="0" max="100" value="0" class="seek_slider" id="seek_slider">
+              <div class="total-duration">00:00</div>
+          </div>
+          
+  
+          <div class="slider_container">
+            <i class="fa fa-volume-down"></i>
+            <input type="range" min="0" max="100" value="80" class="volume_slider" id="volume_slider">
+            <i class="fa fa-volume-up"></i>
+        </div>
+            <div class="buttons">
+              <div class="repeat-track"  id="repeat-track">
+                <i class="fa fa-rotate fa-2x" title="repeat"></i>
+            </div>
+            
+                 <div class="prev-track" id="prev_page">
+                  <i class="fa fa-step-backward fa-2x" id="prev_page"></i>
+              </div>
+  
+                 <div class="playpause-track" >
+                  <div class="playpause-track" >
+                    <i class="fa fa-pause-circle fa-5x"id="playpause_button"></i>
+                </div>
+              </div>
+  
+              <div class="lecteur" style="display:none;">
+                <audio class="fc-media" style="width: 100%;" id="fc-media" controls>
+                 <source src="{% if item.audio_file %}{{item.audio_file.url}}{% else %}{{item.audio_link}}{% endif %}" type="audio/mp3"/>
+                </audio>
+              </div>    
+              
+  
+              <div class="next-track" id="next_page">
+                <i class="fa fa-step-forward fa-2x"id="next_page"></i>
+            </div>
+
+                 <div class="show-hide-music-list">
+                  <i class="fa fa-music fa-2x" id="toggle_music_list"></i>
+              </div>
+            </div>
+            <div class="music-list" id="music_list">
+              <div class="list-header">
+                <i class="fa fa-music"></i> <!-- Music icon -->
+                <span>Music List</span>
+                <button class="close-btn"><i class="fa fa-times"></i></button> <!-- Close button -->
+            </div>
+        
+              <ul>
+                  {% for song in songs %}
+                  <li class="song-item">
+                    <a href="/?page={{ forloop.counter }}">
+                      <div class="song-info">
+                          <span class="song-title">{{ song.title }}</span>
+                          <span class="song-artist">{{ song.artist }}</span>
+                        </div>
+                        <a href="{{ song.audio_file.url }}" download class="download-button">
+                          <i class="fa fa-download"></i>
+                      </a>                
+                    </a>
+                  </li>
+                  {% endfor %}
+              </ul>
+          </div> 
+             <div id="wave">
+                 <span class="stroke"></span>
+                 <span class="stroke"></span>
+                 <span class="stroke"></span>
+                 <span class="stroke"></span>
+                 <span class="stroke"></span>
+                 <span class="stroke"></span>
+                 <span class="stroke"></span>
+             </div>  
+        </div>
+        <div class="lyrics-container">
+          <div class="lyrics">
+              <p id="song-lyrics" class="song-lyrics" data-lyrics="{{item.lyrics}}"></p>
+          </div>
+          {% endfor %}
+      </div>
+      {% comment %} <div class="playlist">
+        <h2>Playlist</h2>
+        <ul>
+          {% for song in songs %}
+    <li class="song-item">
+      <a href="/?page={{ forloop.counter }}">
+        <div class="song-info">
+            <div class="song-title">{{ song.title }}</div>
+            <div class="song-artist">{{ song.artist }}</div>
+        </div>
+        <!-- Nút download -->
+        <a href="{{ song.audio_file.url }}" download class="download-button">
+          <i class="fa fa-download fa-2x"></i>
+        </a>
+    </li>
+    {% endfor %}
+        </ul>
+    </div>   {% endcomment %}
+    </div>
+<script>
+  document.getElementById('toggle_music_list').addEventListener('click', function() {
+    var musicList = document.getElementById('music_list');
+    if (musicList.classList.contains('visible')) {
+        musicList.classList.remove('visible');
+    } else {
+        musicList.classList.add('visible');
+    }
+});
+document.querySelector('.close-btn').addEventListener('click', function() {
+  var musicList = document.getElementById('music_list');
+  musicList.classList.remove('visible');
+});
+  </script>
+  
+   </body>
+  </html>
