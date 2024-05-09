@@ -11,8 +11,8 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Thiết lập cổng mạng container sử dụng
-EXPOSE 8070
+EXPOSE 8001
 
 # Lệnh để chạy ứng dụng FastAPI
-CMD ["uvicorn", "lyric:app", "--host", "0.0.0.0", "--port", "8070", "--reload"]
+CMD ["uvicorn", "lyric:app", "--reload", "--port", "8001" ]
 
